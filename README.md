@@ -1,8 +1,8 @@
 # AI Urban Resource Optimization
 
-This repository is a modular urban intelligence project that combines time-series forecasting, anomaly detection, computer vision, and operational decision logic to support city-scale resource optimization.
+The repository is a modular urban intelligence project that combines time-series forecasting, anomaly detection, and operational decision logic to support city-scale resource optimization.
 
-The project is designed for developers and data scientists who want to build a practical AI system around live mobility and energy data. It is structured as a research-to-deployment pipeline where each notebook represents a clear stage in the product stack.
+The project is designed for developers and data scientists who want to build a practical AI system around live mobility, weather, and energy data. It is structured as a research-to-deployment pipeline where each notebook represents a clear stage in the product stack.
 
 ## Project goal
 
@@ -10,7 +10,7 @@ The system helps urban stakeholders answer questions like:
 
 - How much traffic will be seen on a corridor in the next hour?
 - Are there abnormal energy usage patterns that require intervention?
-- Is there an unusual number of vehicles or pedestrians in a camera zone?
+- What is the expected weather condition or temperature trend for the next hour?
 - Which operational action should the city or campus system trigger next?
 
 The final outcome is a decision engine that uses model outputs and operational context to recommend actions such as route guidance, signal timing changes, or maintenance alerts.
@@ -20,11 +20,10 @@ The final outcome is a decision engine that uses model outputs and operational c
 The project follows a layered architecture:
 
 1. Data ingestion and preprocessing
-2. Forecasting pipelines for traffic and energy
+2. Forecasting pipelines for traffic, energy, and weather
 3. Anomaly detection for unusual energy behavior
-4. Object detection for traffic and visual context
-5. Decision logic for operational recommendations
-6. Backend integration for serving predictions and actions
+4. Decision logic for operational recommendations
+5. Backend integration for serving predictions and actions
 
 This can map to a real full-stack application as:
 
@@ -46,14 +45,13 @@ AI_Urban_Resource_Optimization/
 │   │   ├── energydata_complete.csv
 │   │   ├── household_power_consumption.txt
 │   │   └── household_power_consumption.zip
-│   ├── bdd100k/
 │   └── weather/
 ├── notebooks/
 │   ├── 01_traffic_forecasting.ipynb
 │   ├── 02_energy_forecasting.ipynb
 │   ├── 03_energy_anomaly_detection.ipynb
-│   ├── 04_traffic_object_detection.ipynb
-│   └── 05_decision_engine.ipynb
+│   ├── 05_decision_engine.ipynb
+│   ├── 06_weather_forecasting.ipynb
 ├── models/
 │   ├── traffic_forecasting_model.pkl
 │   ├── traffic_features.pkl
@@ -93,15 +91,15 @@ File: notebooks/03_energy_anomaly_detection.ipynb
 
 This notebook identifies abnormal patterns in household or building energy consumption using unsupervised anomaly detection. It flags unusual spikes and saves an anomaly model for downstream use in the decision engine.
 
-### 4. Traffic object detection
-File: notebooks/04_traffic_object_detection.ipynb
+### 4. Weather forecasting
+File: notebooks/06_weather_forecasting.ipynb
 
-This notebook demonstrates a computer vision workflow for traffic scene understanding. It can use YOLO-style object detection for vehicles, pedestrians, or scene-level descriptors.
+This notebook uses the weather columns already present in the traffic dataset to train a short-horizon temperature forecasting model. It creates lag, rolling, and time features and saves a weather model artifact for operational use.
 
 ### 5. Decision engine
 File: notebooks/05_decision_engine.ipynb
 
-This notebook combines model outputs into a rule-based logic engine. It merges traffic forecast load, energy anomaly status, and environmental context into a recommended action set.
+This notebook combines model outputs into a rule-based logic engine. It merges traffic forecast load, energy anomaly status, and weather signals into a recommended action set.
 
 ## Data model and backend connection
 
@@ -141,6 +139,7 @@ The system is organized around a few operational entities:
   - reasons for action
   - confidence score
 
+
 ### Data model mapping to backend
 
 A backend service can expose these as API resources:
@@ -152,10 +151,6 @@ A backend service can expose these as API resources:
 - POST /energy/predict
   - accepts the current energy features
   - returns predicted_energy and anomaly_state
-
-- POST /vision/detect
-  - accepts an image or sensor metadata
-  - returns counts and object detections
 
 - POST /decision/recommend
   - aggregates all predictions and returns action suggestions
