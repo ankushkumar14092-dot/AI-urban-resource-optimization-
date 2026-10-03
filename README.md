@@ -101,6 +101,30 @@ File: notebooks/05_decision_engine.ipynb
 
 This notebook combines model outputs into a rule-based logic engine. It merges traffic forecast load, energy anomaly status, and weather signals into a recommended action set.
 
+## Project status and handoff for other developers
+
+This repository is in a usable research-to-prototype state. The current active workflows are:
+
+- Traffic forecasting using the Metro Interstate traffic dataset
+- Energy forecasting and anomaly detection using energy usage signals
+- Weather forecasting using weather-related columns from the traffic dataset
+- Decision logic that combines the model outputs into a final recommendation
+
+Important notes for contributors:
+
+- The project currently does not include a standalone weather CSV in the data/weather folder.
+- The weather model therefore uses weather columns already available in traffic data as the source of training signals.
+- The project scope has been intentionally limited to the three core model families: traffic, energy, and weather.
+- BDD or vision-related work is not part of the active production scope unless a dedicated dataset and model pipeline are added later.
+
+### What a new developer should do first
+
+1. Open the notebooks in order and confirm the training pipeline runs under the project venv.
+2. Verify all required data files exist under the project data folders.
+3. Load the saved model artifacts from the models/ directory before connecting any backend API.
+4. Reuse the feature names and JSON schemas shown below when building the API layer.
+5. Keep all retraining outputs consistent with the model names used in the backend.
+
 ## Data model and backend connection
 
 The project has a clear data flow between model output and backend services.
@@ -124,12 +148,12 @@ The system is organized around a few operational entities:
   - lag features
   - anomaly flag
 
-- DetectionRecord
+- WeatherForecastRecord
   - timestamp
-  - camera or sensor id
-  - vehicle count
-  - pedestrian count
-  - confidence scores
+  - temperature
+  - rain/snow/cloud indicators
+  - forecasted next hour value
+  - prediction confidence
 
 - ActionRecommendation
   - timestamp
@@ -338,6 +362,7 @@ This project is intentionally organized to make it easy to extend into a real pr
 5. Add a dashboard frontend to visualize key KPIs
 6. Add tests for API contracts and model inference outputs
 7. Add observability and retraining tracking
+8. Add a model registry that stores training date, data source, and metric version
 
 ## Setup instructions
 
@@ -365,8 +390,10 @@ Run notebooks in order:
 1. 01_traffic_forecasting.ipynb
 2. 02_energy_forecasting.ipynb
 3. 03_energy_anomaly_detection.ipynb
-4. 04_traffic_object_detection.ipynb
+4. 06_weather_forecasting.ipynb
 5. 05_decision_engine.ipynb
+
+This is the active notebook sequence for the current project scope.
 
 ### Saving new models
 
@@ -378,6 +405,9 @@ When retraining a model, keep the artifact naming consistent:
 - energy_forecasting_model.pkl
 - energy_features.pkl
 - anomaly_detector.pkl
+- weather_forecasting_model.pkl
+- weather_features.pkl
+- weather_training_metadata.pkl
 
 This makes the backend integration predictable and easier to maintain.
 
@@ -390,6 +420,19 @@ This makes the backend integration predictable and easier to maintain.
 - Keep model training code separate from deployment logic.
 - Log all predictions with timestamps and metadata.
 - Monitor model drift and performance over time.
+- Always store the exact training dataset path in the project data folder and record the date window used for training.
+
+## Recommended next milestone
+
+The project is ready for the next phase:
+
+- build a FastAPI or Flask backend service
+- expose /traffic/predict, /energy/predict, /weather/predict, and /decision/recommend endpoints
+- persist model outputs to a database or log store
+- create a lightweight dashboard to show predicted volume, anomaly alerts, and weather risk
+- add automated tests for API inputs, outputs, and schema validation
+
+This allows the notebook models to become real operational services rather than isolated experiments.
 
 ## Developer note
 
